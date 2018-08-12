@@ -27,8 +27,13 @@ int nsRed = 11;
 int pedPin = 12;
 int emergencyPin = 13;
 
+int endOfDayPin = A0;
+
 bool green = true;
 bool ns = true;
+
+int emergencyUse = 0;
+int pedestrianUse = 0;
 
 void setup() {
     // put your setup code here, to run once:
@@ -48,6 +53,8 @@ void setup() {
 
     pinMode (pedPin, INPUT);                                    // Pedestrian pin
     pinMode (emergencyPin, INPUT);                                    // Emergency pin
+
+    pinMode (endOfDayPin, INPUT);                                    // Emergency pin
 }
 
 int getSeconds() {
@@ -132,17 +139,34 @@ void checkPedestrianCrossing() {
     if(!ns && green && activated) {
         green = false;
         lightSeconds = 0;
+        pedestrianUse++;
     }
 }
 
 void checkEmergency() {
     int activated = digitalRead(emergencyPin);
 
-    if(ns && activated) {
+    if(ns && green && activated) {
         green = false;
         lightSeconds = 0;
+        emergencyUse++;
     }
+}
 
+void checkEndOfDay() {
+    int pinRead = analogRead(endOfDayPin);
+
+    if(pinRead > 500) {
+        Serial.print("Emergency vehicle overrides: ");
+        Serial.println(emergencyUse);
+
+        Serial.print("Pedestrian signal uses: ");
+        Serial.println(pedestrianUse);
+
+        emergencyUse = 0;
+        pedestrianUse = 0;
+        delay(1000);
+    }
 }
 
 void loop() {
@@ -151,14 +175,12 @@ void loop() {
 
     checkEmergency();
 
+    checkEndOfDay();
+
     seconds = getSeconds();
 
     changeLightSeconds();
     changeLightState();
-    light();
-
-    Serial.println(lightSeconds);
-
     light();
 }
 
