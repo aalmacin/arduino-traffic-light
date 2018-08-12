@@ -1,3 +1,22 @@
+int seconds = 0;
+int previousSeconds = 0;
+int lightSeconds = 0;
+int green = true;
+int ns = true;
+
+int morningEveningNS = 10;
+int morningEveningEW = 5;
+
+int middayOvernightNS = 5;
+int middayOvernightEW = 3;
+
+int nsSeconds = morningEveningNS;
+int ewSeconds = morningEveningEW;
+
+int morningPin = 2;
+int middayPin = 3;
+int eveningPin = 4;
+int overnightPin = 5;
 
 int ewGreen = 6;
 int ewYellow = 7;
@@ -7,19 +26,13 @@ int nsGreen = 9;
 int nsYellow = 10;
 int nsRed = 11;
 
-int seconds = 0;
-int previousSeconds = 0;
-int lightSeconds = 0;
-int green = true;
-int ns = true;
-
 void setup() {
     // put your setup code here, to run once:
     Serial.begin (9600);
-    pinMode (2, INPUT);                                      // 7am -9am
-    pinMode (3, INPUT);                                      // 9am -4pm
-    pinMode (4, INPUT);                                      // 4pm - 6pm
-    pinMode (5, INPUT);                                      // 6pm - 7am
+    pinMode (morningPin, INPUT);                                      // 7am -9am
+    pinMode (middayPin, INPUT);                                      // 9am -4pm
+    pinMode (eveningPin, INPUT);                                      // 4pm - 6pm
+    pinMode (overnightPin, INPUT);                                      // 6pm - 7am
 
     pinMode (ewGreen, OUTPUT);                                     // E/W Green
     pinMode (ewYellow, OUTPUT);                                     // E/W Yellow
@@ -73,7 +86,7 @@ void changeLightSeconds() {
 }
 
 void changeLightState() {
-    if(lightSeconds != 0 && green && ns && lightSeconds % 10 == 0) {
+    if(lightSeconds != 0 && green && ns && lightSeconds % nsSeconds == 0) {
         green = false;
         ns = true;
         lightSeconds = 0;
@@ -81,7 +94,7 @@ void changeLightState() {
         green = true;
         ns = false;
         lightSeconds = 0;
-    } else if(lightSeconds != 0 && green && !ns && lightSeconds % 5 == 0) {
+    } else if(lightSeconds != 0 && green && !ns && lightSeconds % ewSeconds == 0) {
         green = false;
         ns = false;
         lightSeconds = 0;
@@ -92,8 +105,24 @@ void changeLightState() {
     }
 }
 
+void checkTimeOfDayPin() {
+    int morning = digitalRead(morningPin);
+    int midday = digitalRead(middayPin);
+    int evening = digitalRead(eveningPin);
+    int overnight = digitalRead(overnightPin);
+
+    if(morning == HIGH || evening == HIGH) {
+        nsSeconds = morningEveningNS;
+        ewSeconds = morningEveningEW;
+    } else if(midday == HIGH || overnight == HIGH) {
+        nsSeconds = middayOvernightNS;
+        ewSeconds = middayOvernightEW;
+    }
+}
+
 void loop() {
-    //morningEveningSeq();
+    checkTimeOfDayPin();
+
     seconds = getSeconds();
 
     changeLightSeconds();
@@ -104,3 +133,4 @@ void loop() {
 
     light();
 }
+
