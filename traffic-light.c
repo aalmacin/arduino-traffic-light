@@ -1,8 +1,6 @@
 int seconds = 0;
 int previousSeconds = 0;
 int lightSeconds = 0;
-int green = true;
-int ns = true;
 
 int morningEveningNS = 10;
 int morningEveningEW = 5;
@@ -26,6 +24,12 @@ int nsGreen = 9;
 int nsYellow = 10;
 int nsRed = 11;
 
+int pedPin = 12;
+
+bool green = true;
+bool ns = true;
+bool emergency = false;
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin (9600);
@@ -41,6 +45,8 @@ void setup() {
     pinMode (nsGreen, OUTPUT);                                     // N/S Green
     pinMode (nsYellow, OUTPUT);                                    // N/S Yellow
     pinMode (nsRed, OUTPUT);                                    // N/S Red
+
+    pinMode (pedPin, INPUT);                                    // Pedestrian pin
 }
 
 int getSeconds() {
@@ -120,8 +126,18 @@ void checkTimeOfDayPin() {
     }
 }
 
+void checkPedestrianCrossing() {
+    int activated = digitalRead(pedPin);
+    if(!ns && green && activated) {
+        green = false;
+        lightSeconds = 0;
+    }
+}
+
 void loop() {
     checkTimeOfDayPin();
+
+    checkPedestrianCrossing();
 
     seconds = getSeconds();
 
