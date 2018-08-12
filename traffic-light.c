@@ -25,10 +25,10 @@ int nsYellow = 10;
 int nsRed = 11;
 
 int pedPin = 12;
+int emergencyPin = 13;
 
 bool green = true;
 bool ns = true;
-bool emergency = false;
 
 void setup() {
     // put your setup code here, to run once:
@@ -47,6 +47,7 @@ void setup() {
     pinMode (nsRed, OUTPUT);                                    // N/S Red
 
     pinMode (pedPin, INPUT);                                    // Pedestrian pin
+    pinMode (emergencyPin, INPUT);                                    // Emergency pin
 }
 
 int getSeconds() {
@@ -134,10 +135,21 @@ void checkPedestrianCrossing() {
     }
 }
 
+void checkEmergency() {
+    int activated = digitalRead(emergencyPin);
+
+    if(ns && activated) {
+        green = false;
+        lightSeconds = 0;
+    }
+
+}
+
 void loop() {
     checkTimeOfDayPin();
-
     checkPedestrianCrossing();
+
+    checkEmergency();
 
     seconds = getSeconds();
 
